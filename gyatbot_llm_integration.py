@@ -148,10 +148,13 @@ async def on_message(message):
 async def gyatmotivate(ctx):
     await ctx.send(random.choice(spontaneous_messages))
 
+from openai import OpenAI
+client = OpenAI(api_key=OPENAI_API_KEY)
+
 @bot.command(name="gyatbot")
 async def gyatbot(ctx, *, prompt):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -167,15 +170,16 @@ async def gyatbot(ctx, *, prompt):
             max_tokens=150,
             temperature=0.9
         )
-        await ctx.send(response['choices'][0]['message']['content'])
+        await ctx.send(response.choices[0].message.content)
     except Exception as e:
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
 
+
 @tasks.loop(seconds=60)
 async def check_dexscreener():
     try:
-        url = f"https://api.dexscreener.com/latest/dex/trades/{DEXPAIR}"
+        url = f"https://api.dexscreener.com/latest/dex/pairs/solana/{DEXPAIR}"
         response = requests.get(url)
         try:
             data = response.json()
