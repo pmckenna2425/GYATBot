@@ -175,34 +175,37 @@ async def gyatbot(ctx, *, prompt):
 @tasks.loop(seconds=60)
 async def check_dexscreener():
     try:
-        url = f"https://api.dexscreener.com/latest/dex/pairs/solana/{DEXPAIR}"
+        url = f"https://api.dexscreener.com/latest/dex/trades/{DEXPAIR}"
         response = requests.get(url)
         data = response.json()
 
-        txns = data.get("pair", {}).get("txns", {})
-        buys = txns.get("m5", {}).get("buys", 0)
-        sells = txns.get("m5", {}).get("sells", 0)
+        trades = data.get("trades", [])
 
-        if buys >= 1:
-            print("Big buy detected!")
-            channel = discord.utils.get(bot.get_all_channels(), name="general")
-            if channel:
-                await channel.send(random.choice([
-                    f"CHAD BUY INCOMING. SOMEBODY’S GOT DIAMOND FOREARMS 💎",
-                    f"{buys} BUYERS JUST GOT GYATTED UP. WE’RE BACK.",
-                    "WHOEVER BOUGHT JUST BOUGHT IMMORTALITY.",
-                ]))
+        channel = discord.utils.get(bot.get_all_channels(), name="general")
+        if not channel:
+            return
 
-        if sells >= 1:
-            print("Sell detected.")
-            channel = discord.utils.get(bot.get_all_channels(), name="general")
-            if channel:
-                await channel.send(random.choice([
-                    f"{sells} people just sold… and lost their manhood.",
-                    "SELLERS DETECTED. WEAKNESS IN THE AIR.",
-                    "YOU SOLD THE DIP? STAY DOWN.",
-                ]))
+        for trade in trades:
+            side = trade.get("side")  # "buy" or "sell"
+            amount_usd = float(trade.get("priceUsd", 0)) * float(trade.get("amount", 0))
+            tx_hash = trade.get("txHash", "")[:8]  # shortened hash
+
+            if amount_usd >= 500:
+                if side == "buy":
+                    await channel.send(random.choice([
+                        f"💰 BIG BUY: ${amount_usd:.2f} just sent us to GYAT ORBIT 🚀 (tx: `{tx_hash}...`)",
+                        f"BUYER JUST DROPPED ${amount_usd:.2f}. CALL HIM FRANKIE 💦",
+                        f"${amount_usd:.2f} BUY INCOMING. GYAT MODE: ENGAGED 🔥",
+                    ]))
+                elif side == "sell":
+                    await channel.send(random.choice([
+                        f"🧻 SELL ALERT: ${amount_usd:.2f} just paper-handed their way into oblivion. (tx: `{tx_hash}...`)",
+                        f"${amount_usd:.2f} SELL?? DON’T LET FRANKIE SEE THIS WEAKNESS.",
+                        f"WHOEVER SOLD ${amount_usd:.2f} — you just missed the next ATH 🚫",
+                    ]))
+
     except Exception as e:
-        print("Dexscreener error:", e)
+        print("Dexscreener trade check error:", e)
+
 
 bot.run(TOKEN)
