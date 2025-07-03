@@ -181,7 +181,7 @@ async def check_birdeye():
             return
 
         trades = data.get("data", [])
-        channel = discord.utils.get(bot.get_all_channels(), name="general")
+        channel = discord.utils.get(bot.get_all_channels(), name="💬general")
         if not channel:
             return
 
