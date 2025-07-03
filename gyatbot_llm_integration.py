@@ -177,7 +177,12 @@ async def check_dexscreener():
     try:
         url = f"https://api.dexscreener.com/latest/dex/trades/{DEXPAIR}"
         response = requests.get(url)
-        data = response.json()
+        try:
+            data = response.json()
+        except ValueError:
+            print("Invalid JSON from Dexscreener. Response content:", response.text)
+            return
+
 
         trades = data.get("trades", [])
 
