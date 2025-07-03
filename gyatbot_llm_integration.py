@@ -1,7 +1,8 @@
 import os
 import discord
 import random
-import openai
+from openai import openAI
+client = OpenAI(api_key=OPENAI_API_KEY)
 import requests
 from discord.ext import commands, tasks
 from collections import defaultdict
