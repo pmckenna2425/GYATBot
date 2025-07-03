@@ -157,9 +157,6 @@ async def on_message(message):
 async def gyatmotivate(ctx):
     await ctx.send(random.choice(spontaneous_messages))
 
-from openai import OpenAI
-client = OpenAI(api_key=OPENAI_API_KEY)
-
 @bot.command(name="gyatbot")
 async def gyatbot(ctx, *, prompt):
     try:
@@ -173,13 +170,14 @@ async def gyatbot(ctx, *, prompt):
                         "You roast weak traders, praise GYATGINS who buy the dip, and speak in meme-laced hype language. "
                         "You reference Frankie LaPenna like he’s a prophet, and every response should sound like you're yelling mid-pre-workout."
                     )
-                },
-                {"role": "user", "content": prompt}
+            },
+            {"role": "user", "content": message.content}
             ],
             max_tokens=150,
             temperature=0.9
         )
-        await ctx.send(response.choices[0].message.content)
+        await message.channel.send(response.choices[0].message.content)
+
     except Exception as e:
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
