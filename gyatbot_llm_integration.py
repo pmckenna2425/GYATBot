@@ -21,8 +21,6 @@ DEXPAIR = os.getenv("DEXPAIR")
 FRANKIE_ID = os.getenv("FRANKIE_ID")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-openai.api_key = OPENAI_API_KEY
-
 # Intents and bot setup
 intents = discord.Intents.default()
 intents.messages = True
