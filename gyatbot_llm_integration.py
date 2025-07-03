@@ -1,4 +1,3 @@
-
 import os
 import discord
 import random
@@ -27,7 +26,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Track message counts per channel
 message_counts = defaultdict(int)
 
-# Motivational spam messages for every ~10 user messages
+# Motivational spam messages
 spontaneous_messages = [
     "WE LIVE FOR RED DAYS. PAIN IS JUST A PRE-WORKOUT.",
     "SEND IT LOWER. I’M NOT EVEN HARD YET.",
@@ -40,7 +39,7 @@ spontaneous_messages = [
     "BUY NOW OR REGRET WHEN WE'RE ON JOE ROGAN.",
 ]
 
-# Keywords for GYAT reactions
+# Keywords and responses
 keywords = {
     "gyat": [
         "HOLD ME BACK I’M TOO GYATTED RIGHT NOW.",
@@ -93,10 +92,8 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    # Track messages per channel
     message_counts[message.channel.id] += 1
 
-    # Check if Frankie posted
     if str(message.author.id) == FRANKIE_ID:
         await message.channel.send(random.choice([
             "FRANKIE HAS ENTERED THE CHAT. GET DISCIPLINED.",
@@ -104,24 +101,46 @@ async def on_message(message):
             "WE FOLLOW FRANKIE INTO FIRE. INTO FUD. INTO THE GYAT.",
         ]))
 
-    # Check for keyword triggers
     msg = message.content.lower()
     for key, responses in keywords.items():
         if key in msg:
             await message.channel.send(random.choice(responses))
             break
 
-    # Trigger spontaneous message randomly every 8–12 user messages
     count = message_counts[message.channel.id]
     if count >= random.randint(8, 12):
         await message.channel.send(random.choice(spontaneous_messages))
-        message_counts[message.channel.id] = 0  # Reset
+        message_counts[message.channel.id] = 0
 
     await bot.process_commands(message)
 
 @bot.command(name="gyatmotivate")
 async def gyatmotivate(ctx):
     await ctx.send(random.choice(spontaneous_messages))
+
+@bot.command(name="gyatbot")
+async def gyatbot(ctx, *, prompt):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are GYATBot, a loud, absurd, hilarious meme bot with David Goggins energy. "
+                        "You roast weak traders, praise GYATGINS who buy the dip, and speak in meme-laced hype language. "
+                        "You reference Frankie LaPenna like he’s a prophet, and every response should sound like you're yelling mid-pre-workout."
+                    )
+                },
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=150,
+            temperature=0.9
+        )
+        await ctx.send(response['choices'][0]['message']['content'])
+    except Exception as e:
+        await ctx.send("GYATBot had a meltdown. Try again later.")
+        print("OpenAI error:", e)
 
 @tasks.loop(seconds=60)
 async def check_dexscreener():
@@ -134,28 +153,25 @@ async def check_dexscreener():
         buys = txns.get("m5", {}).get("buys", 0)
         sells = txns.get("m5", {}).get("sells", 0)
 
-        if buys > 0:
-            if buys >= 1:
-                print("Big buy detected!")
-                channel = discord.utils.get(bot.get_all_channels(), name="general")
-                if channel:
-                    await channel.send(random.choice([
-                        f"CHAD BUY INCOMING. SOMEBODY’S GOT DIAMOND FOREARMS 💎",
-                        f"{buys} BUYERS JUST GOT GYATTED UP. WE’RE BACK.",
-                        "WHOEVER BOUGHT JUST BOUGHT IMMORTALITY.",
-                    ]))
+        if buys >= 1:
+            print("Big buy detected!")
+            channel = discord.utils.get(bot.get_all_channels(), name="general")
+            if channel:
+                await channel.send(random.choice([
+                    f"CHAD BUY INCOMING. SOMEBODY’S GOT DIAMOND FOREARMS 💎",
+                    f"{buys} BUYERS JUST GOT GYATTED UP. WE’RE BACK.",
+                    "WHOEVER BOUGHT JUST BOUGHT IMMORTALITY.",
+                ]))
 
-        if sells > 0:
-            if sells >= 1:
-                print("Sell detected.")
-                channel = discord.utils.get(bot.get_all_channels(), name="general")
-                if channel:
-                    await channel.send(random.choice([
-                        f"{sells} people just sold… and lost their manhood.",
-                        "SELLERS DETECTED. WEAKNESS IN THE AIR.",
-                        "YOU SOLD THE DIP? STAY DOWN.",
-                    ]))
-
+        if sells >= 1:
+            print("Sell detected.")
+            channel = discord.utils.get(bot.get_all_channels(), name="general")
+            if channel:
+                await channel.send(random.choice([
+                    f"{sells} people just sold… and lost their manhood.",
+                    "SELLERS DETECTED. WEAKNESS IN THE AIR.",
+                    "YOU SOLD THE DIP? STAY DOWN.",
+                ]))
     except Exception as e:
         print("Dexscreener error:", e)
 
