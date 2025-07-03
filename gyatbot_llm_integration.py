@@ -8,7 +8,8 @@ from collections import defaultdict
 
 # Load environment variables
 TOKEN = os.getenv("TOKEN")
-DEXPAIR = os.getenv("DEXPAIR")
+BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
+TOKEN_MINT = os.getenv("TOKEN_MINT")
 FRANKIE_ID = os.getenv("FRANKIE_ID")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -84,7 +85,7 @@ keywords = {
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
-    check_dexscreener.start()
+    check_birdeye.start()
 
 @bot.event
 async def on_message(message):
@@ -167,40 +168,48 @@ async def gyatbot(ctx, *, prompt):
         print("OpenAI error:", e)
 
 @tasks.loop(seconds=60)
-async def check_dexscreener():
+async def check_birdeye():
     try:
-        url = f"https://api.dexscreener.com/latest/dex/pairs/solana/{DEXPAIR}"
-        response = requests.get(url)
+        url = f"https://public-api.birdeye.so/public/transaction/token/{TOKEN_MINT}?limit=10"
+        headers = {"X-API-KEY": BIRDEYE_API_KEY}
+        response = requests.get(url, headers=headers)
+
         try:
             data = response.json()
         except ValueError:
-            print("Invalid JSON from Dexscreener. Response content:", response.text)
+            print("Invalid JSON from Birdeye. Response content:", response.text)
             return
 
-        trades = data.get("trades", [])
+        trades = data.get("data", [])
         channel = discord.utils.get(bot.get_all_channels(), name="general")
         if not channel:
             return
 
         for trade in trades:
-            side = trade.get("side")
-            amount_usd = float(trade.get("priceUsd", 0)) * float(trade.get("amount", 0))
-            tx_hash = trade.get("txHash", "")[:8]
+            try:
+                side = trade.get("side")  # "buy" or "sell"
+                price_usdt = float(trade.get("priceUsdt", 0))
+                amount = float(trade.get("amount", 0))
+                amount_usd = price_usdt * amount
+                tx_hash = trade.get("txHash", "")[:8]
 
-            if amount_usd >= 500:
-                if side == "buy":
-                    await channel.send(random.choice([
-                        f"💰 BIG BUY: ${amount_usd:.2f} just sent us to GYAT ORBIT 🚀 (tx: `{tx_hash}...`)",
-                        f"BUYER JUST DROPPED ${amount_usd:.2f}. CALL HIM FRANKIE 💦",
-                        f"${amount_usd:.2f} BUY INCOMING. GYAT MODE: ENGAGED 🔥",
-                    ]))
-                elif side == "sell":
-                    await channel.send(random.choice([
-                        f"🧻 SELL ALERT: ${amount_usd:.2f} just paper-handed their way into oblivion. (tx: `{tx_hash}...`)",
-                        f"${amount_usd:.2f} SELL?? DON’T LET FRANKIE SEE THIS WEAKNESS.",
-                        f"WHOEVER SOLD ${amount_usd:.2f} — you just missed the next ATH 🚫",
-                    ]))
+                if amount_usd >= 500:
+                    if side == "buy":
+                        await channel.send(random.choice([
+                            f"💰 BIG BUY: ${amount_usd:.2f} just sent us to GYAT ORBIT 🚀 (tx: `{tx_hash}...`)",
+                            f"BUYER JUST DROPPED ${amount_usd:.2f}. CALL HIM FRANKIE 💦",
+                            f"${amount_usd:.2f} BUY INCOMING. GYAT MODE: ENGAGED 🔥",
+                        ]))
+                    elif side == "sell":
+                        await channel.send(random.choice([
+                            f"🧻 SELL ALERT: ${amount_usd:.2f} just paper-handed their way into oblivion. (tx: `{tx_hash}...`)",
+                            f"${amount_usd:.2f} SELL?? DON’T LET FRANKIE SEE THIS WEAKNESS.",
+                            f"WHOEVER SOLD ${amount_usd:.2f} — you just missed the next ATH 🚫",
+                        ]))
+            except Exception as parse_error:
+                print("Error parsing Birdeye trade:", parse_error)
+
     except Exception as e:
-        print("Dexscreener trade check error:", e)
+        print("Birdeye trade check error:", e)
 
 bot.run(TOKEN)
