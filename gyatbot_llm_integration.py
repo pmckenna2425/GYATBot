@@ -94,6 +94,7 @@ async def on_message(message):
 
     message_counts[message.channel.id] += 1
 
+    # If Frankie speaks
     if str(message.author.id) == FRANKIE_ID:
         await message.channel.send(random.choice([
             "FRANKIE HAS ENTERED THE CHAT. GET DISCIPLINED.",
@@ -102,17 +103,46 @@ async def on_message(message):
         ]))
 
     msg = message.content.lower()
+
+    # If user mentions gyatbot, generate LLM-based response
+    if "gyatbot" in msg:
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are GYATBot, a loud, absurd, hilarious meme bot with David Goggins energy. "
+                            "You roast weak traders, praise GYATGINS who buy the dip, and speak in meme-laced hype language. "
+                            "You reference Frankie LaPenna like he’s a prophet, and every response should sound like you're yelling mid-pre-workout."
+                        )
+                    },
+                    {"role": "user", "content": message.content}
+                ],
+                max_tokens=150,
+                temperature=0.9
+            )
+            await message.channel.send(response['choices'][0]['message']['content'])
+        except Exception as e:
+            await message.channel.send("GYATBot had a meltdown. Try again later.")
+            print("OpenAI error:", e)
+        return
+
+    # Keyword-based memes
     for key, responses in keywords.items():
         if key in msg:
             await message.channel.send(random.choice(responses))
             break
 
+    # Random motivational spam
     count = message_counts[message.channel.id]
     if count >= random.randint(8, 12):
         await message.channel.send(random.choice(spontaneous_messages))
         message_counts[message.channel.id] = 0
 
     await bot.process_commands(message)
+
 
 @bot.command(name="gyatmotivate")
 async def gyatmotivate(ctx):
