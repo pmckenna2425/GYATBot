@@ -1,8 +1,16 @@
 import os
 import discord
 import random
-from openai import openAI
+# Load environment variables
+TOKEN = os.getenv("TOKEN")
+DEXPAIR = os.getenv("DEXPAIR")
+FRANKIE_ID = os.getenv("FRANKIE_ID")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Initialize OpenAI client (correctly placed)
+from openai import OpenAI
 client = OpenAI(api_key=OPENAI_API_KEY)
+
 import requests
 from discord.ext import commands, tasks
 from collections import defaultdict
