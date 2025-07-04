@@ -170,29 +170,25 @@ async def gyatbot(ctx, *, prompt):
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
 
-@bot.tree.command(name="gyatprice", description="Get the current GYAT price from Birdeye")
+@bot.tree.command(name="gyatprice", description="Get the current GYAT price from Dexscreener")
 async def gyatprice(interaction: discord.Interaction):
-    await interaction.response.defer()  # Acknowledge the interaction up front (important!)
+    await interaction.response.defer()  # Acknowledge the command quickly
+
     try:
-        url = f"https://public-api.birdeye.so/public/price?address={TOKEN_MINT}&chain=solana"
-        headers = {"X-API-KEY": BIRDEYE_API_KEY}
-        response = requests.get(url, headers=headers)
+        url = "https://api.dexscreener.com/latest/dex/pairs/solana/dgqd4rmbkf3upcy7guklmyosap4hpzmuwsvsuzatjlky"
+        response = requests.get(url)
         data = response.json()
 
-        if not data.get("data"):
-            await interaction.followup.send("Birdeye didn't return valid price data. Might be rate-limited or token error.")
-            print("GYATPrice API response missing 'data':", data)
-            return
+        price = data.get("pair", {}).get("priceUsd")
 
-        price = data["data"].get("value")
-        if price is None:
-            await interaction.followup.send("GYAT price not found in the response.")
-            return
-
-        await interaction.followup.send(f"💸 Current GYAT price: **${price:.6f}**")
+        if price:
+            await interaction.followup.send(f"💸 Current GYAT price: **${float(price):.6f}**")
+        else:
+            await interaction.followup.send("Couldn't fetch GYAT price from Dexscreener.")
+            print("GYATPrice error: 'priceUsd' not found in response")
     except Exception as e:
-        await interaction.followup.send("Couldn't fetch GYAT price. Blame the bears.")
-        print("GYATPrice error:", e)
+        await interaction.followup.send("Error fetching GYAT price.")
+        print("GYATPrice exception:", e)
 
 @tasks.loop(seconds=60)
 async def check_birdeye():
