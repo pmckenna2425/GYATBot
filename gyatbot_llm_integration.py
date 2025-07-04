@@ -85,9 +85,15 @@ keywords = {
 }
 
 @bot.event
+@bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
-    await bot.tree.sync()
+    try:
+        synced = await bot.tree.sync()
+        print(f"✅ Synced {len(synced)} slash commands.")
+    except Exception as e:
+        print("❌ Failed to sync slash commands:", e)
+
 
 @bot.event
 async def on_message(message):
