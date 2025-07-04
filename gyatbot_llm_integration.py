@@ -3,7 +3,7 @@ import discord
 import random
 import requests
 from openai import OpenAI
-from discord.ext import commands, tasks
+from discord.ext import commands
 from collections import defaultdict
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -87,8 +87,7 @@ keywords = {
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
-    await bot.tree.sync()  # <- Important for slash commands
-    check_birdeye.start()
+    await bot.tree.sync()
 
 @bot.event
 async def on_message(message):
@@ -172,7 +171,7 @@ async def gyatbot(ctx, *, prompt):
 
 @bot.tree.command(name="gyatprice", description="Get the current GYAT price from Dexscreener")
 async def gyatprice(interaction: discord.Interaction):
-    await interaction.response.defer()  # Acknowledge the command quickly
+    await interaction.response.defer()
 
     try:
         url = "https://api.dexscreener.com/latest/dex/pairs/solana/dgqd4rmbkf3upcy7guklmyosap4hpzmuwsvsuzatjlky"
@@ -189,51 +188,6 @@ async def gyatprice(interaction: discord.Interaction):
     except Exception as e:
         await interaction.followup.send("Error fetching GYAT price.")
         print("GYATPrice exception:", e)
-
-@tasks.loop(seconds=60)
-async def check_birdeye():
-    try:
-        url = f"https://public-api.birdeye.so/public/transaction/token/{TOKEN_MINT}?limit=10&chain=solana"
-        headers = {"X-API-KEY": BIRDEYE_API_KEY}
-        response = requests.get(url, headers=headers)
-
-        try:
-            data = response.json()
-        except ValueError:
-            print("Invalid JSON from Birdeye. Response content:", response.text)
-            return
-
-        trades = data.get("data", [])
-        channel = discord.utils.get(bot.get_all_channels(), name="💬general")
-        if not channel:
-            return
-
-        for trade in trades:
-            try:
-                side = trade.get("side")
-                price_usdt = float(trade.get("priceUsdt", 0))
-                amount = float(trade.get("amount", 0))
-                amount_usd = price_usdt * amount
-                tx_hash = trade.get("txHash", "")[:8]
-
-                if amount_usd >= 500:
-                    if side == "buy":
-                        await channel.send(random.choice([
-                            f"💰 BIG BUY: ${amount_usd:.2f} just sent us to GYAT ORBIT 🚀 (tx: `{tx_hash}...`)",
-                            f"BUYER JUST DROPPED ${amount_usd:.2f}. CALL HIM FRANKIE 💦",
-                            f"${amount_usd:.2f} BUY INCOMING. GYAT MODE: ENGAGED 🔥",
-                        ]))
-                    elif side == "sell":
-                        await channel.send(random.choice([
-                            f"🧻 SELL ALERT: ${amount_usd:.2f} just paper-handed their way into oblivion. (tx: `{tx_hash}...`)",
-                            f"${amount_usd:.2f} SELL?? DON’T LET FRANKIE SEE THIS WEAKNESS.",
-                            f"WHOEVER SOLD ${amount_usd:.2f} — you just missed the next ATH ❌",
-                        ]))
-            except Exception as parse_error:
-                print("Error parsing Birdeye trade:", parse_error)
-
-    except Exception as e:
-        print("Birdeye trade check error:", e)
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
