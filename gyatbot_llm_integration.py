@@ -177,11 +177,18 @@ async def gyatprice(interaction: discord.Interaction):
         headers = {"X-API-KEY": BIRDEYE_API_KEY}
         response = requests.get(url, headers=headers)
         data = response.json()
+
+        if "data" not in data:
+            print("GYATPrice API response missing 'data':", data)
+            await interaction.response.send_message("Birdeye didn't return valid price data. Might be rate-limited or token error.")
+            return
+
         price = float(data["data"]["value"])
         await interaction.response.send_message(f"Current GYAT price: ${price:.6f}")
     except Exception as e:
         await interaction.response.send_message("Couldn't fetch GYAT price. Blame the bears.")
         print("GYATPrice error:", e)
+
 
 
 @tasks.loop(seconds=60)
