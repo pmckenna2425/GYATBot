@@ -5,6 +5,8 @@ import requests
 from openai import OpenAI
 from discord.ext import commands, tasks
 from collections import defaultdict
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # Load environment variables
 TOKEN = os.getenv("TOKEN")
@@ -167,6 +169,19 @@ async def gyatbot(ctx, *, prompt):
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
 
+@bot.command(name="gyatprice")
+async def gyatprice(ctx):
+    try:
+        url = f"https://public-api.birdeye.so/public/price/token_price?address={TOKEN_MINT}"
+        headers = {"X-API-KEY": BIRDEYE_API_KEY}
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        price = float(data.get("data", {}).get("value", 0))
+        await ctx.send(f"Current GYAT price: ${price:.6f}")
+    except Exception as e:
+        await ctx.send("Couldn't fetch price. Try again later.")
+        print("Price fetch error:", e)
+
 @tasks.loop(seconds=60)
 async def check_birdeye():
     try:
@@ -187,7 +202,7 @@ async def check_birdeye():
 
         for trade in trades:
             try:
-                side = trade.get("side")  # "buy" or "sell"
+                side = trade.get("side")
                 price_usdt = float(trade.get("priceUsdt", 0))
                 amount = float(trade.get("amount", 0))
                 amount_usd = price_usdt * amount
@@ -204,7 +219,7 @@ async def check_birdeye():
                         await channel.send(random.choice([
                             f"🧻 SELL ALERT: ${amount_usd:.2f} just paper-handed their way into oblivion. (tx: `{tx_hash}...`)",
                             f"${amount_usd:.2f} SELL?? DON’T LET FRANKIE SEE THIS WEAKNESS.",
-                            f"WHOEVER SOLD ${amount_usd:.2f} — you just missed the next ATH 🚫",
+                            f"WHOEVER SOLD ${amount_usd:.2f} — you just missed the next ATH ❌",
                         ]))
             except Exception as parse_error:
                 print("Error parsing Birdeye trade:", parse_error)
@@ -212,21 +227,12 @@ async def check_birdeye():
     except Exception as e:
         print("Birdeye trade check error:", e)
 
-import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
-
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b"GYATBot is healthy")
 
-def run_health_server():
-    server = HTTPServer(('0.0.0.0', 8000), HealthCheckHandler)
-    server.serve_forever()
-
-# Start the health check HTTP server in a separate thread
-threading.Thread(target=run_health_server, daemon=True).start()
-
+threading.Thread(target=lambda: HTTPServer(('0.0.0.0', 8000), HealthCheckHandler).serve_forever(), daemon=True).start()
 
 bot.run(TOKEN)
