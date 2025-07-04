@@ -87,6 +87,7 @@ keywords = {
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
+    await bot.tree.sync()  # <- Important for slash commands
     check_birdeye.start()
 
 @bot.event
@@ -169,18 +170,19 @@ async def gyatbot(ctx, *, prompt):
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
 
-@bot.command(name="gyatprice")
-async def gyatprice(ctx):
+@bot.tree.command(name="gyatprice", description="Check the current GYAT price")
+async def gyatprice(interaction: discord.Interaction):
     try:
         url = f"https://public-api.birdeye.so/public/price/token_price?address={TOKEN_MINT}"
         headers = {"X-API-KEY": BIRDEYE_API_KEY}
         response = requests.get(url, headers=headers)
         data = response.json()
-        price = float(data.get("data", {}).get("value", 0))
-        await ctx.send(f"Current GYAT price: ${price:.6f}")
+        price = float(data["data"]["value"])
+        await interaction.response.send_message(f"Current GYAT price: ${price:.6f}")
     except Exception as e:
-        await ctx.send("Couldn't fetch price. Try again later.")
-        print("Price fetch error:", e)
+        await interaction.response.send_message("Couldn't fetch GYAT price. Blame the bears.")
+        print("GYATPrice error:", e)
+
 
 @tasks.loop(seconds=60)
 async def check_birdeye():
