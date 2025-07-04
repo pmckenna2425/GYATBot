@@ -173,7 +173,7 @@ async def gyatbot(ctx, *, prompt):
 @bot.tree.command(name="gyatprice", description="Check the current GYAT price")
 async def gyatprice(interaction: discord.Interaction):
     try:
-        url = f"https://public-api.birdeye.so/public/price/token_price?address={TOKEN_MINT}"
+        url = f"https://public-api.birdeye.so/public/price/token_price?address=EfgEGG9PxLhyk1wqtqgGnwgfVC7JYic3vC9BCWLvpump&chain=solana"
         headers = {"X-API-KEY": BIRDEYE_API_KEY}
         response = requests.get(url, headers=headers)
         data = response.json()
@@ -194,7 +194,7 @@ async def gyatprice(interaction: discord.Interaction):
 @tasks.loop(seconds=60)
 async def check_birdeye():
     try:
-        url = f"https://public-api.birdeye.so/public/transaction/token/{TOKEN_MINT}?limit=10"
+        url = f"https://public-api.birdeye.so/public/transaction/token/{TOKEN_MINT}?limit=10&chain=solana"
         headers = {"X-API-KEY": BIRDEYE_API_KEY}
         response = requests.get(url, headers=headers)
 
