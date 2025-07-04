@@ -209,6 +209,10 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(b"GYATBot is healthy")
 
+    def do_HEAD(self):
+        self.send_response(200)
+        self.end_headers()
+
 threading.Thread(target=lambda: HTTPServer(('0.0.0.0', 8000), HealthCheckHandler).serve_forever(), daemon=True).start()
 
 bot.run(TOKEN)
