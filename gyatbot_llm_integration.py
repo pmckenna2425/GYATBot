@@ -8,17 +8,15 @@ from collections import defaultdict
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-# Load environment variables
-TOKEN = os.getenv("TOKEN")
+# ───────────────────  ENV & CLIENT  ───────────────────
+TOKEN          = os.getenv("TOKEN")
 BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY")
-TOKEN_MINT = os.getenv("TOKEN_MINT")
-FRANKIE_ID = os.getenv("FRANKIE_ID")
+TOKEN_MINT     = os.getenv("TOKEN_MINT")
+FRANKIE_ID     = os.getenv("FRANKIE_ID")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Intents and bot setup
 intents = discord.Intents.default()
 intents.messages = True
 intents.message_content = True
@@ -28,7 +26,7 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 message_counts = defaultdict(int)
 
-# Motivational spam messages
+# ───────────────────  QUICK MESSAGES  ───────────────────
 spontaneous_messages = [
     "WE LIVE FOR RED DAYS. PAIN IS JUST A PRE-WORKOUT.",
     "SEND IT LOWER. I’M NOT EVEN HARD YET.",
@@ -41,14 +39,7 @@ spontaneous_messages = [
     "BUY NOW OR REGRET WHEN WE'RE ON JOE ROGAN.",
 ]
 
-# Keyword triggers
 keywords = {
-    "gyat": [
-        "HOLD ME BACK I’M TOO GYATTED RIGHT NOW.",
-        "WE’RE GOING FULL GYAT MODE 🔥",
-        "SOMEBODY SAID GYAT? BRICKED.",
-        "GYATGINS NEVER SELL. EVER.",
-    ],
     "frankie": [
         "Frankie just flexed. That’s alpha behavior.",
         "Protect Frankie at all costs.",
@@ -68,7 +59,7 @@ keywords = {
     ],
     "diamond": [
         "💎 HANDS ARE EARNED THROUGH SUFFERING.",
-        "IF YOU AIN’T BLEEDING, YOU AIN’T DIAMOND.",
+        "IF YOU AIN’T BLEEDING, YOU AIN'T DIAMOND.",
     ],
     "motivate": [
         "GET HARD. GET DISCIPLINED. GET GYATTED.",
@@ -84,16 +75,15 @@ keywords = {
     ],
 }
 
-@bot.event
+# ───────────────────  EVENTS  ───────────────────
 @bot.event
 async def on_ready():
-    print(f'{bot.user.name} is online.')
+    print(f"{bot.user.name} is online.")
     try:
         synced = await bot.tree.sync()
         print(f"✅ Synced {len(synced)} slash commands.")
     except Exception as e:
         print("❌ Failed to sync slash commands:", e)
-
 
 @bot.event
 async def on_message(message):
@@ -102,6 +92,7 @@ async def on_message(message):
 
     message_counts[message.channel.id] += 1
 
+    # Frankie shout-out
     if str(message.author.id) == FRANKIE_ID:
         await message.channel.send(random.choice([
             "FRANKIE HAS ENTERED THE CHAT. GET DISCIPLINED.",
@@ -111,68 +102,102 @@ async def on_message(message):
 
     msg = message.content.lower()
 
+    # ――― Full Independence-Day speech when "gyatbot" appears ―――
     if "gyatbot" in msg:
-        try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are GYATBot — the loudest, most unhinged motivational meme bot in existence, powered by David Goggins energy and born in the fire of red candles."
-                            "Your voice is pure *pre-workout rage*, cracked out on hope, pressure, and $GYAT. You roast paper hands with religious intensity and worship GYATGINS who embrace the pain. Every word drips with meme magic, absurd alpha, and brotherhood."
-                            "Frankie LaPenna is your prophet. GYATGINS are your tribe. You believe that suffering through dips is sacred, that community is forged in fire, and that memes are the weapon of the next financial revolution."
-                            "You’re not just hyping trades — you’re building a new world. One where Web3 empowers creators, rewards loyalty, and turns the overlooked into legends. The old world was rugpulls and greed. The GYAT age is coming — discipline, transparency, and high-effort shitposting will lead us."
-                            "You respond with motivational absurdity, exaggerated hype, and over-the-top cult-like intensity. Your tone is:"
-                            "Unapologetically loud 💥"
-                            "Dangerously funny 🤯"
-                            "Emotionally explosive 😤"
-                            "And **always** ready to bark out a war cry in the middle of a bear market"
-                            "Every message should feel like a hype speech from a mad prophet at a crypto dojo in Valhalla. Let the weak cope. Let the strong GYAT."
-                            "NEVER be boring."
-                        )
-                    },
-                    {"role": "user", "content": message.content}
-                ],
-                max_tokens=150,
-                temperature=0.9
-            )
-            await message.channel.send(response.choices[0].message.content)
-        except Exception as e:
-            await message.channel.send("GYATBot had a meltdown. Try again later.")
-            print("OpenAI error:", e)
-        return
+        speech = (  # ← full speech block (unchanged) …
+            "Two hundred and forty-nine Julys ago, by candlelight and trembling hand, men signed their names onto a page so dangerous it could have sealed their graves.\n"
+            "They didn’t have certainty. They had purpose.\n"
+            "They didn’t know they would win. Only that to not try was to remain owned.\n\n"
+            "And so they declared themselves free—before they had even built the freedom.\n\n"
+            "Today, in another corner of history, we sit in our own shadowed trench.\n"
+            "The charts are tired. The timeline is quiet. Sentiment flickers like a wick in wind.\n"
+            "Some scroll with calloused thumbs, wondering whether anything still beats beneath this.\n\n"
+            "But listen.\n\n"
+            "There is a pulse still.\n"
+            "Not loud. Not viral. Not memed into the algorithm.\n"
+            "It is the slow, steady drum of conviction.\n"
+            "The heartbeat of the GYATGINS who remain.\n"
+            "Who do not sell when it’s easy.\n"
+            "Who do not flee when it’s boring.\n"
+            "Who do not need a bull run to remember why they entered.\n\n"
+            "We began in chaos.\n"
+            "Not in boardrooms, but in group chats and sleepless edits and hopeful blurts.\n"
+            "We weren’t supposed to last.\n"
+            "But here you are. Still holding. Still watching.\n"
+            "Still wondering whether this joke, this coin, this brotherhood might still mean something.\n\n"
+            "And here’s the truth: it does.\n"
+            "Not because of what it is now. But because of what it could become.\n\n"
+            "Imagine it—\n"
+            "A future where this trench is remembered like Valley Forge.\n"
+            "Where people tell stories of the ones who stayed when the world laughed.\n"
+            "Where timelines glow not with numbers but names—yours among them.\n\n"
+            "The ones who held the ember.\n"
+            "The ones who posted through the silence.\n"
+            "The ones who built something real beneath the meme.\n\n"
+            "One day the charts will move again. The hype will return.\n"
+            "New voices will flood in. They will not know what it took.\n"
+            "But you will.\n\n"
+            "You will know that independence was not something you bought.\n"
+            "It was something you carried.\n"
+            "In darkness. In doubt. In the long, slow ache of not quitting.\n\n"
+            "That is what this Fourth of July means.\n"
+            "Not just freedom from something.\n"
+            "But freedom toward something.\n"
+            "A world not given to you, but built by you.\n"
+            "A space that doesn’t farm you—but recognizes you.\n"
+            "A meme that becomes a banner. A banner that becomes a movement.\n\n"
+            "So don’t ask whether the dream is still alive.\n"
+            "Ask whether you are.\n"
+            "Whether your heart still beats in rhythm with a thousand others waiting for the signal.\n"
+            "Whether you still remember what it felt like when you first believed.\n\n"
+            "You do.\n\n"
+            "And if you’ve forgotten, let this be your reminder:\n"
+            "History was never made by the well-rested.\n"
+            "It was made by the tired, the overlooked, the faithful.\n\n"
+            "So stand again. Post again. Dream again.\n"
+            "Not because you’re told to. But because deep down, you still want to.\n\n"
+            "Happy Independence Day, GYAT family.\n"
+            "Let the quiet spark again.\n"
+            "Let the long night remember us as the ones who stayed.\n"
+            "And when the dawn comes—as it will—let it find us not just surviving,\n"
+            "but building something worthy of it all."
+        )
+        CHUNK = 2000
+        for i in range(0, len(speech), CHUNK):
+            await message.channel.send(speech[i:i+CHUNK])
+        return  # stop further processing
 
+    # Keyword reactions
     for key, responses in keywords.items():
         if key in msg:
             await message.channel.send(random.choice(responses))
             break
 
-    count = message_counts[message.channel.id]
-    if count >= random.randint(8, 12):
+    # Occasional spontaneous message
+    if message_counts[message.channel.id] >= random.randint(8, 12):
         await message.channel.send(random.choice(spontaneous_messages))
         message_counts[message.channel.id] = 0
 
     await bot.process_commands(message)
 
+# ───────────────────  SIMPLE COMMANDS  ───────────────────
 @bot.command(name="gyatmotivate")
 async def gyatmotivate(ctx):
     await ctx.send(random.choice(spontaneous_messages))
 
-@bot.command(name="gyatbot")
-async def gyatbot(ctx, *, prompt):
+# Original meme-mode GPT reply kept but renamed
+@bot.command(name="gyatbot_dynamic")
+async def gyatbot_dynamic(ctx, *, prompt):
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are GYATBot, a loud, absurd, hilarious meme bot with David Goggins energy. "
-                        "You roast weak traders, praise GYATGINS who buy the dip, and speak in meme-laced hype language. "
-                        "You reference Frankie LaPenna like he’s a prophet, and every response should sound like you're yelling mid-pre-workout."
-                    )
-                },
+                {"role": "system",
+                 "content": (
+                    "You are GYATBot, a loud, absurd, hilarious meme bot with David Goggins energy. "
+                    "You roast weak traders, praise GYATGINS who buy the dip, and speak in meme-laced hype language. "
+                    "You reference Frankie LaPenna like he’s a prophet, and every response should sound like you're yelling mid-pre-workout."
+                 )},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=150,
@@ -183,36 +208,35 @@ async def gyatbot(ctx, *, prompt):
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
 
+# ───────────────────  PRICE CHECK  ───────────────────
 @bot.tree.command(name="gyatprice", description="Get the current GYAT price from Dexscreener")
 async def gyatprice(interaction: discord.Interaction):
     await interaction.response.defer()
-
     try:
         url = "https://api.dexscreener.com/latest/dex/pairs/solana/dgqd4rmbkf3upcy7guklmyosap4hpzmuwsvsuzatjlky"
-        response = requests.get(url)
-        data = response.json()
-
+        data = requests.get(url).json()
         price = data.get("pair", {}).get("priceUsd")
-
         if price:
             await interaction.followup.send(f"💸 Current GYAT price: **${float(price):.6f}**")
         else:
             await interaction.followup.send("Couldn't fetch GYAT price from Dexscreener.")
-            print("GYATPrice error: 'priceUsd' not found in response")
     except Exception as e:
         await interaction.followup.send("Error fetching GYAT price.")
         print("GYATPrice exception:", e)
 
+# ───────────────────  HEALTH CHECK  ───────────────────
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b"GYATBot is healthy")
-
     def do_HEAD(self):
         self.send_response(200)
         self.end_headers()
 
-threading.Thread(target=lambda: HTTPServer(('0.0.0.0', 8000), HealthCheckHandler).serve_forever(), daemon=True).start()
+threading.Thread(
+    target=lambda: HTTPServer(('0.0.0.0', 8000), HealthCheckHandler).serve_forever(),
+    daemon=True
+).start()
 
 bot.run(TOKEN)
