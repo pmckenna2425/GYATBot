@@ -41,48 +41,6 @@ spontaneous_messages = [
     "BUY NOW OR REGRET WHEN WE'RE ON JOE ROGAN.",
 ]
 
-# Keyword triggers
-keywords = {
-    "gyat": [
-        "HOLD ME BACK I’M TOO GYATTED RIGHT NOW.",
-        "WE’RE GOING FULL GYAT MODE 🔥",
-        "SOMEBODY SAID GYAT? BRICKED.",
-        "GYATGINS NEVER SELL. EVER.",
-    ],
-    "frankie": [
-        "Frankie just flexed. That’s alpha behavior.",
-        "Protect Frankie at all costs.",
-        "Our beacon. Our inspiration. Frankie LaPenna has spoken.",
-    ],
-    "moon": [
-        "WE'RE NOT STOPPING AT THE MOON. WE’RE SHOOTING FOR ANDROMEDA.",
-        "This thing's about to GYAT past Pluto.",
-    ],
-    "pump": [
-        "EVERY PUMP MAKES US HARDER.",
-        "THIS ISN'T A PUMP. THIS IS ASCENSION.",
-    ],
-    "pressure": [
-        "BRING ON THE PRESSURE 💎",
-        "PRESSURE MAKES DIAMOND HANDS.",
-    ],
-    "diamond": [
-        "💎 HANDS ARE EARNED THROUGH SUFFERING.",
-        "IF YOU AIN’T BLEEDING, YOU AIN’T DIAMOND.",
-    ],
-    "motivate": [
-        "GET HARD. GET DISCIPLINED. GET GYATTED.",
-        "REAL ONES GRIND WHILE OTHERS FUD.",
-    ],
-    "community": [
-        "COMMUNITY ISN’T A WORD. IT’S A BLOOD OATH.",
-        "GYATGINS STICK TOGETHER THROUGH THE DIP.",
-    ],
-    "support": [
-        "TRUE SUPPORT IS BUYING WHEN EVERYONE ELSE CRIES.",
-        "WE LIFT EACH OTHER UP — INTO ORBIT.",
-    ],
-}
 
 @bot.event
 @bot.event
@@ -158,7 +116,7 @@ async def on_message(message):
             break
 
     count = message_counts[message.channel.id]
-    if count >= random.randint(8, 12):
+    if count >= random.randint(15, 20):
         await message.channel.send(random.choice(spontaneous_messages))
         message_counts[message.channel.id] = 0
 
