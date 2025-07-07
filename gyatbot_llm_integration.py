@@ -110,11 +110,6 @@ async def on_message(message):
             print("OpenAI error:", e)
         return
 
-    for key, responses in keywords.items():
-        if key in msg:
-            await message.channel.send(random.choice(responses))
-            break
-
     count = message_counts[message.channel.id]
     if count >= random.randint(15, 20):
         await message.channel.send(random.choice(spontaneous_messages))
