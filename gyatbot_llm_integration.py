@@ -180,7 +180,7 @@ async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, li
     await interaction.response.defer()
 
     # Clamp limit for safety
-    limit = max(10, min(100, limit))
+    limit = max(10, min(200, limit))
 
     try:
         # Safe way to load messages now
