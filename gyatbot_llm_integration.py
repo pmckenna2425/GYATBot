@@ -170,17 +170,26 @@ async def gyatprice(interaction: discord.Interaction):
         await interaction.followup.send("Error fetching GYAT price.")
         print("GYATPrice exception:", e)
 
-@bot.tree.command(name="gyatsummary", description="Summarize recent messages in this channel in full GYATBot style")
-@discord.app_commands.describe(limit="How many recent messages to summarize (max 100)")
-async def gyatsummary(interaction: discord.Interaction, limit: int = 50):
+from discord import TextChannel
+
+@bot.tree.command(name="gyatsummary", description="Summarize recent messages from a selected channel in full GYATBot style")
+@discord.app_commands.describe(
+    limit="How many recent messages to summarize (max 100)",
+    channel="Choose the channel to summarize"
+)
+async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, limit: int = 50):
     await interaction.response.defer()
 
-    # Clamp limit between 10 and 100
+    # Clamp limit for safety
     limit = max(10, min(100, limit))
 
     try:
-        messages = await interaction.channel.history(limit=limit).flatten()
+        messages = await channel.history(limit=limit).flatten()
         message_texts = [f"{msg.author.display_name}: {msg.content}" for msg in messages if msg.content]
+
+        if not message_texts:
+            await interaction.followup.send("There wasn't enough juicy content to summarize. Post more GYAT.")
+            return
 
         context = "\n".join(reversed(message_texts))  # Oldest to newest
 
@@ -204,8 +213,9 @@ async def gyatsummary(interaction: discord.Interaction, limit: int = 50):
 
         await interaction.followup.send(response.choices[0].message.content)
     except Exception as e:
-        await interaction.followup.send("GYATBot couldn't summarize that one... too much chaos in the trenches.")
+        await interaction.followup.send("GYATBot couldn’t handle that one... too much chaos in the chosen channel.")
         print("GYATSummary error:", e)
+
 
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
