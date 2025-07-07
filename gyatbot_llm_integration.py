@@ -176,12 +176,14 @@ from discord import TextChannel
     channel="Choose the channel to summarize"
 )
 async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, limit: int = 50):
+    # ✅ Defer immediately to avoid timeout
     await interaction.response.defer()
 
     # Clamp limit for safety
     limit = max(10, min(100, limit))
 
     try:
+        # Safe way to load messages now
         messages = [msg async for msg in channel.history(limit=limit)]
         message_texts = [f"{msg.author.display_name}: {msg.content}" for msg in messages if msg.content]
 
@@ -213,6 +215,7 @@ async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, li
     except Exception as e:
         await interaction.followup.send("GYATBot couldn’t handle that one... too much chaos in the chosen channel.")
         print("GYATSummary error:", e)
+
 
 
 
