@@ -41,16 +41,19 @@ spontaneous_messages = [
     "BUY NOW OR REGRET WHEN WE'RE ON JOE ROGAN.",
 ]
 
-
-@bot.event
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
     try:
         synced = await bot.tree.sync()
         print(f"✅ Synced {len(synced)} slash commands.")
+        print("Slash commands currently registered:")
+        for cmd in bot.tree.get_commands():
+        print(f"- {cmd.name}: {cmd.description}")
+
     except Exception as e:
         print("❌ Failed to sync slash commands:", e)
+        
 
 
 @bot.event
