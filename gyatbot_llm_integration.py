@@ -111,7 +111,7 @@ async def on_message(message):
                     {"role": "user", "content": message.content}
                 ],
                 max_tokens=150,
-                temperature=0.9
+                temperature=1.1
             )
             await message.channel.send(response.choices[0].message.content)
         except Exception as e:
