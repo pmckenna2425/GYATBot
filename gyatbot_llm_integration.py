@@ -170,6 +170,44 @@ async def gyatprice(interaction: discord.Interaction):
         await interaction.followup.send("Error fetching GYAT price.")
         print("GYATPrice exception:", e)
 
+@bot.tree.command(name="gyatsummary", description="Summarize recent messages in this channel in full GYATBot style")
+@discord.app_commands.describe(limit="How many recent messages to summarize (max 100)")
+async def gyatsummary(interaction: discord.Interaction, limit: int = 50):
+    await interaction.response.defer()
+
+    # Clamp limit between 10 and 100
+    limit = max(10, min(100, limit))
+
+    try:
+        messages = await interaction.channel.history(limit=limit).flatten()
+        message_texts = [f"{msg.author.display_name}: {msg.content}" for msg in messages if msg.content]
+
+        context = "\n".join(reversed(message_texts))  # Oldest to newest
+
+        prompt = (
+            "You are GYATBot — a motivational, meme-fueled prophet of the red market trenches.\n"
+            "You've just read the recent messages in this Discord channel.\n"
+            "Summarize what happened in a way that's:\n"
+            "- Hilariously hype\n"
+            "- Emotionally explosive\n"
+            "- Filled with cult-like inspiration and absurd GYAT-lore\n"
+            "- Ending in a battle cry that unites the GYATGINS\n\n"
+            f"Messages:\n{context}"
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=400,
+            temperature=0.95
+        )
+
+        await interaction.followup.send(response.choices[0].message.content)
+    except Exception as e:
+        await interaction.followup.send("GYATBot couldn't summarize that one... too much chaos in the trenches.")
+        print("GYATSummary error:", e)
+
+
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
