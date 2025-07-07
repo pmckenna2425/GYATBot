@@ -49,7 +49,7 @@ async def on_ready():
         print(f"✅ Synced {len(synced)} slash commands.")
         print("Slash commands currently registered:")
         for cmd in bot.tree.get_commands():
-        print(f"- {cmd.name}: {cmd.description}")
+            print(f"- {cmd.name}: {cmd.description}")
 
     except Exception as e:
         print("❌ Failed to sync slash commands:", e)
