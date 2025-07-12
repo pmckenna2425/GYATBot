@@ -63,7 +63,6 @@ async def on_message(message):
 
     message_counts[message.channel.id] += 1
 
-
     msg = message.content.lower()
 
     if "gyatbot" in msg:
