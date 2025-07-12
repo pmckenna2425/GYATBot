@@ -63,12 +63,6 @@ async def on_message(message):
 
     message_counts[message.channel.id] += 1
 
-    if str(message.author.id) == FRANKIE_ID:
-        await message.channel.send(random.choice([
-            "FRANKIE HAS ENTERED THE CHAT. GET DISCIPLINED.",
-            "FRANKIE'S HERE — STAND TALL GYATGINS.",
-            "WE FOLLOW FRANKIE INTO FIRE. INTO FUD. INTO THE GYAT.",
-        ]))
 
     msg = message.content.lower()
 
