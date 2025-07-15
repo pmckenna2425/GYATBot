@@ -75,7 +75,7 @@ async def on_message(message):
 
     if "gyatbot" in msg:
         try:
-            SPECIAL_USER_ID = "718183377047388171"  
+            SPECIAL_USER_ID = "296068880110190595"  
 
             # Roast this specific user
             if str(message.author.id) == SPECIAL_USER_ID:
@@ -89,6 +89,7 @@ async def on_message(message):
                     "The context is that we have a very successful token that will go up over time." 
                     "He knows that, so there is no risk for him." 
                     "What we need to do is make sure people all see through him and what he is doing, and just view him as a joke."
+                    "Be very subtle but ruthless and savage in your subtlety." 
 
 
                 )
