@@ -90,6 +90,7 @@ async def on_message(message):
                     "He knows that, so there is no risk for him." 
                     "What we need to do is make sure people all see through him and what he is doing, and just view him as a joke."
                     "Be very subtle but ruthless and savage in your subtlety." 
+                    "Once again, be subtle but embarrass him." 
 
 
                 )
