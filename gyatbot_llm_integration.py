@@ -80,7 +80,7 @@ async def on_message(message):
             # Roast this specific user
             if str(message.author.id) == SPECIAL_USER_ID:
                 system_prompt = (
-                    "This person is swing trading the token."
+                    "This person named Josh and is swing trading the token."
                     "He is trying to manipulate people to sell/buy and trading the movements and it’s very obvious."
                     "He is very transparent and not slick." 
                     "Bring this to light every time he speaks in the chat but in a condescending way towards him, subtly belittling him every time he speaks." 
