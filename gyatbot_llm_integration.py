@@ -75,7 +75,7 @@ async def on_message(message):
 
     if "gyatbot" in msg:
         try:
-            SPECIAL_USER_ID = "296068880110190595"  
+            SPECIAL_USER_ID = "718183377047388171"  
 
             # Roast this specific user
             if str(message.author.id) == SPECIAL_USER_ID:
