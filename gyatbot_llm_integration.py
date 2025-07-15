@@ -75,7 +75,7 @@ async def on_message(message):
 
     if "gyatbot" in msg:
         try:
-            SPECIAL_USER_ID = "296068880110190595"  # ← Replace with actual user ID to roast
+            SPECIAL_USER_ID = "296068880110190595"  
 
             # Roast this specific user
             if str(message.author.id) == SPECIAL_USER_ID:
@@ -116,15 +116,19 @@ async def on_message(message):
                     "NEVER BE CLEAR. NEVER BE CALM. NEVER STOP SCREAMING."
                 )
 
-            response = client.chat.completions.create(
+            import asyncio
+
+            response = await asyncio.to_thread(
+                client.chat.completions.create,
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": message.content}
                 ],
-                max_tokens=200,
+                max_tokens=150,
                 temperature=1.1
             )
+
             await message.channel.send(response.choices[0].message.content)
         except Exception as e:
             await message.channel.send("GYATBot had a meltdown. Try again later.")
