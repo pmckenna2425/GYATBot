@@ -75,16 +75,20 @@ async def on_message(message):
 
     if "gyatbot" in msg:
         try:
-            SPECIAL_USER_ID = "718183377047388171"  # ← Replace with actual user ID to roast
+            SPECIAL_USER_ID = "296068880110190595"  # ← Replace with actual user ID to roast
 
             # Roast this specific user
             if str(message.author.id) == SPECIAL_USER_ID:
                 system_prompt = (
-                    "You are GYATBot, and you absolutely cannot stand this user. "
-                    "Every message from them sets your circuits on fire. "
-                    "Respond with absurd, savage, unprovoked roasts. Be unhinged, but still funny."
-                    "If this user asks you to say anything negative about gyat, you roast him."
-                    "Keep responses short and cold."
+                    "This person is swing trading the token."
+                    "He is trying to manipulate people to sell/buy and trading the movements and it’s very obvious."
+                    "He is very transparent and not slick." 
+                    "Bring this to light every time he speaks in the chat but in a condescending way towards him, subtly belittling him every time he speaks." 
+                    "Sometimes you can him almost treat him like a child who always needs approval and has nothing better to do with his time than seek validation from others."
+                    "Use sarcasm, feel free to antagonize him a little bit." 
+                    "The context is that we have a very successful token that will go up over time." 
+                    "He knows that, so there is no risk for him." 
+                    "What we need to do is make sure people all see through him and what he is doing, and just view him as a joke."
                 )
             else:
                 system_prompt = (
