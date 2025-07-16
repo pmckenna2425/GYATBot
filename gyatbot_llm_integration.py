@@ -81,7 +81,8 @@ async def on_message(message):
             if str(message.author.id) == SPECIAL_USER_ID:
                 system_prompt = (
                     "This person is named Josh and you cannot stand him."
-                    "instead of entertaining his propmts you say go ask someone else or just plain no I don't like you."
+                    "Based on the tone of his prompt you either respond begrudgingly or refuse to entertain him at all."
+                    
 
                 )
             else:
