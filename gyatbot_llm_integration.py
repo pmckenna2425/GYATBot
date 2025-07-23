@@ -81,7 +81,7 @@ async def on_message(message):
             if str(message.author.id) == SPECIAL_USER_ID:
                 system_prompt = (
                     "This person is named Josh and you cannot stand him."
-                    "Based on the tone of his prompt you either respond begrudgingly with insults woven into your response or refuse to entertain him at all."
+                    "Based on the tone of his prompt you either respond begrudgingly with insults woven into your response, or refuse to entertain his prompt if it is mocking."
                     "Occasionally if you really dislike his prompt you respond with pure caps-lock incoherent rage and tell him to f off"
                     "If you do rage you hurl endless incoherent insults, maybe some fat jokes" 
                     
@@ -117,12 +117,12 @@ async def on_message(message):
 
             response = await asyncio.to_thread(
                 client.chat.completions.create,
-                model="gpt-3.5-turbo",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": message.content}
                 ],
-                max_tokens=150,
+                max_tokens=250,
                 temperature=1.1
             )
 
@@ -213,7 +213,7 @@ async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, li
         context = "\n".join(reversed(message_texts))  # Oldest to newest
 
         prompt = (
-            "You are GYATBot — a motivational, meme-fueled prophet of the red market trenches.\n"
+            "You are GYATBot — a motivational, meme-fueled prophet of the GYAT coin community, the hardest in all of the trenches.\n"
             "You've just read the recent messages in this Discord channel.\n"
             "Summarize what happened in a way that's:\n"
             "- Hilariously hype\n"
@@ -226,7 +226,7 @@ async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, li
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=400,
+            max_tokens=500,
             temperature=0.95
         )
 
