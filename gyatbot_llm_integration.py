@@ -107,16 +107,16 @@ async def on_message(message):
 
     # Handle GYATBot mention
     if "gyatbot" in msg or message.reference:  # Trigger if 'gyatbot' is mentioned or user replies
-    try:
-        user_id = str(message.author.id)
+        try:
+            user_id = str(message.author.id)
 
-        # Load user's memory
-        previous_history = load_user_memory(user_id)
+            # Load user's memory
+            previous_history = load_user_memory(user_id)
 
-        # Append the new message to their history
-        previous_history.append({
-            "role": "user",
-            "content": message.content
+            # Append the new message to their history
+            previous_history.append({
+                "role": "user",
+                "content": message.content
         })
 
         # Set system prompt (same logic you already had)
