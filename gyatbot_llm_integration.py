@@ -106,7 +106,12 @@ async def on_message(message):
     msg = message.content.lower()
 
     # Handle GYATBot mention
-    if "gyatbot" in msg or message.reference:
+    ref = message.reference
+    if "gyatbot" in msg or (
+        ref and (ref_resolved := await message.channel.fetch_message(ref.message_id)) and
+        ref_resolved.author == bot.user
+    ):
+
         try:
             user_id = str(message.author.id)
 
