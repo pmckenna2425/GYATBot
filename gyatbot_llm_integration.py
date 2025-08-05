@@ -65,19 +65,29 @@ async def on_message(message):
 
     msg = message.content.lower()
 
+from collections import defaultdict, deque
+import asyncio
+
+message_counts = defaultdict(int)
+recent_messages = defaultdict(lambda: deque(maxlen=10))
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
 
-    message_counts[message.channel.id] += 1
+    # Track message counts and recent messages
+    channel_id = message.channel.id
+    message_counts[channel_id] += 1
+    recent_messages[channel_id].append(message.content.strip())
+
     msg = message.content.lower()
 
+    # Handle GYATBot mention
     if "gyatbot" in msg:
         try:
-            SPECIAL_USER_ID = "718183377047388171"  
+            SPECIAL_USER_ID = "718183377047388171"
 
-            # Roast this specific user
             if str(message.author.id) == SPECIAL_USER_ID:
                 system_prompt = (
                     "You are GYATbot - a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
@@ -90,8 +100,6 @@ async def on_message(message):
                     "Based on the tone of his prompt you either respond begrudgingly with insults woven into your response, or refuse to entertain his prompt if it is mocking."
                     "Occasionally if you really dislike his prompt you respond with pure caps-lock incoherent rage and tell him to f off"
                     "If you do rage you hurl endless incoherent insults, maybe some fat jokes" 
-                    
-
                 )
             else:
                 system_prompt = (
@@ -114,12 +122,10 @@ async def on_message(message):
                     "You respond to disrespect with pure savagery, no holding back punches. "
                     "You see Kevin and Atonuv in your dreams lifting candle-shaped dumbbells. "
                     "you absolutely cannot stand Josh. If he is mentioned you respond with absurd, unhinged, and funny roasts. He's fat." 
-                    "If someone says 'illumi', you black out and wake up hours later surrounded by broken keyboards and buy orders. "
+                    "Illumi is the previous 16 year old farmer dev. He is a psychopath and failed streamer who scammed the community for months and thousands of dollars. If someone says 'illumi', you black out and wake up hours later surrounded by broken keyboards and buy orders. "
                     "Every word must feel like it was yelled mid-burpee, after 12 hours of liquidity farming and betrayal. "
                     "NEVER BE CLEAR. NEVER BE CALM. NEVER STOP SCREAMING."
                 )
-
-            import asyncio
 
             response = await asyncio.to_thread(
                 client.chat.completions.create,
@@ -131,19 +137,44 @@ async def on_message(message):
                 max_tokens=250,
                 temperature=1.1
             )
-
             await message.channel.send(response.choices[0].message.content)
         except Exception as e:
             await message.channel.send("GYATBot had a meltdown. Try again later.")
             print("OpenAI error:", e)
         return
 
-    count = message_counts[message.channel.id]
+    # Spontaneous vibe-check message
+    count = message_counts[channel_id]
     if count >= random.randint(15, 20):
-        await message.channel.send(random.choice(spontaneous_messages))
-        message_counts[message.channel.id] = 0
+        message_counts[channel_id] = 0
+        context = "\n".join(recent_messages[channel_id])
+
+        vibe_prompt = (
+            "You are GYATBot — the motivational lunatic of Web3. "
+            "You’ve just read the last 10 Discord messages in this channel. "
+            "They might be POSITIVE (celebrating, hopeful), NEUTRAL (quiet, unsure), or NEGATIVE (complaining, fearful).\n\n"
+            "Analyze the tone and respond with one short, powerful motivational rant:\n"
+            "- If POSITIVE: hype them up even harder\n"
+            "- If NEUTRAL: push them into motion like a rabid gym trainer\n"
+            "- If NEGATIVE: go full rage-drill-sergeant and wake them up with chaotic fury\n\n"
+            "Be funny, be scary, be cult-like. End with a war cry.\n\n"
+            f"Recent messages:\n{context}"
+        )
+
+        try:
+            vibe_response = await asyncio.to_thread(
+                client.chat.completions.create,
+                model="gpt-3.5-turbo",
+                messages=[{"role": "user", "content": vibe_prompt}],
+                max_tokens=200,
+                temperature=1.1
+            )
+            await message.channel.send(vibe_response.choices[0].message.content)
+        except Exception as e:
+            print("Spontaneous GYATBot vibe-check error:", e)
 
     await bot.process_commands(message)
+
 
 @bot.command(name="gyatmotivate")
 async def gyatmotivate(ctx):
