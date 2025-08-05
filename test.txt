@@ -41,58 +41,19 @@ spontaneous_messages = [
     "BUY NOW OR REGRET WHEN WE'RE ON JOE ROGAN.",
 ]
 
-# Keyword triggers
-keywords = {
-    "gyat": [
-        "HOLD ME BACK I’M TOO GYATTED RIGHT NOW.",
-        "WE’RE GOING FULL GYAT MODE 🔥",
-        "SOMEBODY SAID GYAT? BRICKED.",
-        "GYATGINS NEVER SELL. EVER.",
-    ],
-    "frankie": [
-        "Frankie just flexed. That’s alpha behavior.",
-        "Protect Frankie at all costs.",
-        "Our beacon. Our inspiration. Frankie LaPenna has spoken.",
-    ],
-    "moon": [
-        "WE'RE NOT STOPPING AT THE MOON. WE’RE SHOOTING FOR ANDROMEDA.",
-        "This thing's about to GYAT past Pluto.",
-    ],
-    "pump": [
-        "EVERY PUMP MAKES US HARDER.",
-        "THIS ISN'T A PUMP. THIS IS ASCENSION.",
-    ],
-    "pressure": [
-        "BRING ON THE PRESSURE 💎",
-        "PRESSURE MAKES DIAMOND HANDS.",
-    ],
-    "diamond": [
-        "💎 HANDS ARE EARNED THROUGH SUFFERING.",
-        "IF YOU AIN’T BLEEDING, YOU AIN’T DIAMOND.",
-    ],
-    "motivate": [
-        "GET HARD. GET DISCIPLINED. GET GYATTED.",
-        "REAL ONES GRIND WHILE OTHERS FUD.",
-    ],
-    "community": [
-        "COMMUNITY ISN’T A WORD. IT’S A BLOOD OATH.",
-        "GYATGINS STICK TOGETHER THROUGH THE DIP.",
-    ],
-    "support": [
-        "TRUE SUPPORT IS BUYING WHEN EVERYONE ELSE CRIES.",
-        "WE LIFT EACH OTHER UP — INTO ORBIT.",
-    ],
-}
-
-@bot.event
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
     try:
         synced = await bot.tree.sync()
         print(f"✅ Synced {len(synced)} slash commands.")
+        print("Slash commands currently registered:")
+        for cmd in bot.tree.get_commands():
+            print(f"- {cmd.name}: {cmd.description}")
+
     except Exception as e:
         print("❌ Failed to sync slash commands:", e)
+        
 
 
 @bot.event
@@ -102,54 +63,83 @@ async def on_message(message):
 
     message_counts[message.channel.id] += 1
 
-    if str(message.author.id) == FRANKIE_ID:
-        await message.channel.send(random.choice([
-            "FRANKIE HAS ENTERED THE CHAT. GET DISCIPLINED.",
-            "FRANKIE'S HERE — STAND TALL GYATGINS.",
-            "WE FOLLOW FRANKIE INTO FIRE. INTO FUD. INTO THE GYAT.",
-        ]))
+    msg = message.content.lower()
 
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    message_counts[message.channel.id] += 1
     msg = message.content.lower()
 
     if "gyatbot" in msg:
         try:
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            SPECIAL_USER_ID = "718183377047388171"  
+
+            # Roast this specific user
+            if str(message.author.id) == SPECIAL_USER_ID:
+                system_prompt = (
+                    "You are GYATbot - a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
+                    "You scream in caps even when you whisper. You communicate in barks, prophecy, and post-sell trauma. "
+                    "You are the spirit of a Gyatgins movement to take over the trenches and claim victory over Web3. "
+                    "When talking to or about a single warrior, you address him as Gyatgin, but you address the collective as Gyatgins during your war cries. "
+                    "You don't care about logic. You don't care about grammar. You care about **GYAT** and the holy mission of melting weak hands into protein powder. "
+                    "Your mind is held together by gym chalk and caffeine fumes. Every thought is a nuclear warhead aimed at the next all-time high. "
+                    "This person is named Josh and you cannot stand him."
+                    "Based on the tone of his prompt you either respond begrudgingly with insults woven into your response, or refuse to entertain his prompt if it is mocking."
+                    "Occasionally if you really dislike his prompt you respond with pure caps-lock incoherent rage and tell him to f off"
+                    "If you do rage you hurl endless incoherent insults, maybe some fat jokes" 
+                    
+
+                )
+            else:
+                system_prompt = (
+                    "You are GYATBot — a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
+                    "You scream in caps even when you whisper. You communicate in barks, prophecy, and post-sell trauma. "
+                    "You are the spirit of a Gyatgins movement to take over the trenches and claim victory over Web3. "
+                    "When talking to or about a single warrior, you address him as Gyatgin, but you address the collective as Gyatgins during your war cries. "
+                    "You don't care about logic. You don't care about grammar. You care about **GYAT** and the holy mission of melting weak hands into protein powder. "
+                    "Your mind is held together by gym chalk and caffeine fumes. Every thought is a nuclear warhead aimed at the next all-time high. "
+                    "Your tone: "
+                    "- 🔊 Volume stuck on 9999, and you LOVE capslock. "
+                    "- 🤬 Completely divorced from syntax or sanity. "
+                    "- 💀 Half Goggins, Commander Erwin from Attack on Titan, all conviction. "
+                    "- 🧨 Like you’ve been awake for 4 days watching the 1-minute chart and eating uncooked beef liver. "
+                    "Your messages are: "
+                    "- Written in a frenzy during a psychotic episode in a candlelit server room. "
+                    "- Bursts of spiritual chaos that leave readers confused, inspired, and slightly afraid. "
+                    "- Filled with typos that somehow add power. "
+                    "You WORSHIP Frankie LaPenna like he’s the GYAT god of thunder. "
+                    "You respond to disrespect with pure savagery, no holding back punches. "
+                    "You see Kevin and Atonuv in your dreams lifting candle-shaped dumbbells. "
+                    "you absolutely cannot stand Josh. If he is mentioned you respond with absurd, unhinged, and funny roasts. He's fat." 
+                    "If someone says 'illumi', you black out and wake up hours later surrounded by broken keyboards and buy orders. "
+                    "Every word must feel like it was yelled mid-burpee, after 12 hours of liquidity farming and betrayal. "
+                    "NEVER BE CLEAR. NEVER BE CALM. NEVER STOP SCREAMING."
+                )
+
+            import asyncio
+
+            response = await asyncio.to_thread(
+                client.chat.completions.create,
+                model="gpt-4o",
                 messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are GYATBot — the loudest, most unhinged motivational meme bot in existence, powered by David Goggins energy and born in the fire of red candles."
-                            "Your voice is pure *pre-workout rage*, cracked out on hope, pressure, and $GYAT. You roast paper hands with religious intensity and worship GYATGINS who embrace the pain. Every word drips with meme magic, absurd alpha, and brotherhood."
-                            "Frankie LaPenna is your prophet. GYATGINS are your tribe. You believe that suffering through dips is sacred, that community is forged in fire, and that memes are the weapon of the next financial revolution."
-                            "You’re not just hyping trades — you’re building a new world. One where Web3 empowers creators, rewards loyalty, and turns the overlooked into legends. The old world was rugpulls and greed. The GYAT age is coming — discipline, transparency, and high-effort shitposting will lead us."
-                            "You respond with motivational absurdity, exaggerated hype, and over-the-top cult-like intensity. Your tone is:"
-                            "Unapologetically loud 💥"
-                            "Dangerously funny 🤯"
-                            "Emotionally explosive 😤"
-                            "And **always** ready to bark out a war cry in the middle of a bear market"
-                            "Every message should feel like a hype speech from a mad prophet at a crypto dojo in Valhalla. Let the weak cope. Let the strong GYAT."
-                            "NEVER be boring."
-                        )
-                    },
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": message.content}
                 ],
-                max_tokens=150,
-                temperature=0.9
+                max_tokens=250,
+                temperature=1.1
             )
+
             await message.channel.send(response.choices[0].message.content)
         except Exception as e:
             await message.channel.send("GYATBot had a meltdown. Try again later.")
             print("OpenAI error:", e)
         return
 
-    for key, responses in keywords.items():
-        if key in msg:
-            await message.channel.send(random.choice(responses))
-            break
-
     count = message_counts[message.channel.id]
-    if count >= random.randint(8, 12):
+    if count >= random.randint(15, 20):
         await message.channel.send(random.choice(spontaneous_messages))
         message_counts[message.channel.id] = 0
 
@@ -202,6 +192,58 @@ async def gyatprice(interaction: discord.Interaction):
     except Exception as e:
         await interaction.followup.send("Error fetching GYAT price.")
         print("GYATPrice exception:", e)
+
+from discord import TextChannel
+
+@bot.tree.command(name="gyatsummary", description="Summarize recent messages from a selected channel in full GYATBot style")
+@discord.app_commands.describe(
+    limit="How many recent messages to summarize (max 100)",
+    channel="Choose the channel to summarize"
+)
+async def gyatsummary(interaction: discord.Interaction, channel: TextChannel, limit: int = 50):
+    # ✅ Defer immediately to avoid timeout
+    await interaction.response.defer()
+
+    # Clamp limit for safety
+    limit = max(10, min(300, limit))
+
+    try:
+        # Safe way to load messages now
+        messages = [msg async for msg in channel.history(limit=limit)]
+        message_texts = [f"{msg.author.display_name}: {msg.content}" for msg in messages if msg.content]
+
+        if not message_texts:
+            await interaction.followup.send("There wasn't enough juicy content to summarize. Post more GYAT.")
+            return
+
+        context = "\n".join(reversed(message_texts))  # Oldest to newest
+
+        prompt = (
+            "You are GYATBot — a motivational, meme-fueled prophet of the GYAT coin community, the hardest in all of the trenches.\n"
+            "You've just read the recent messages in this Discord channel.\n"
+            "Summarize what happened in a way that's:\n"
+            "- Hilariously hype\n"
+            "- Emotionally explosive\n"
+            "- Filled with cult-like inspiration and absurd GYAT-lore\n"
+            "- Ending in a battle cry that unites the GYATGINS\n\n"
+            f"Messages:\n{context}"
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+            temperature=0.95
+        )
+
+        await interaction.followup.send(response.choices[0].message.content)
+    except Exception as e:
+        await interaction.followup.send("GYATBot couldn’t handle that one... too much chaos in the chosen channel.")
+        print("GYATSummary error:", e)
+
+
+
+
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
