@@ -7,6 +7,9 @@ from discord.ext import commands
 from collections import defaultdict
 import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+from pathlib import Path
+
 
 # Load environment variables
 TOKEN = os.getenv("TOKEN")
@@ -27,6 +30,25 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 message_counts = defaultdict(int)
+
+#Helper functions for file-based memmory
+MEMORY_DIR = Path("user_memory")
+MEMORY_DIR.mkdir(exist_ok=True)
+
+def get_user_memory_file(user_id):
+    return MEMORY_DIR / f"{user_id}.json"
+
+def load_user_memory(user_id):
+    memory_file = get_user_memory_file(user_id)
+    if memory_file.exists():
+        with open(memory_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def save_user_memory(user_id, messages):
+    memory_file = get_user_memory_file(user_id)
+    with open(memory_file, "w", encoding="utf-8") as f:
+        json.dump(messages, f, ensure_ascii=False, indent=2)
 
 # Motivational spam messages
 spontaneous_messages = [
@@ -84,13 +106,24 @@ async def on_message(message):
     msg = message.content.lower()
 
     # Handle GYATBot mention
-    if "gyatbot" in msg:
-        try:
-            SPECIAL_USER_ID = "718183377047388171"
+    if "gyatbot" in msg or message.reference:  # Trigger if 'gyatbot' is mentioned or user replies
+    try:
+        user_id = str(message.author.id)
 
-            if str(message.author.id) == SPECIAL_USER_ID:
-                system_prompt = (
-                    "You are GYATbot - a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
+        # Load user's memory
+        previous_history = load_user_memory(user_id)
+
+        # Append the new message to their history
+        previous_history.append({
+            "role": "user",
+            "content": message.content
+        })
+
+        # Set system prompt (same logic you already had)
+        SPECIAL_USER_ID = "718183377047388171"
+        if user_id == SPECIAL_USER_ID:
+            system_prompt = (
+                "You are GYATbot - a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
                     "You scream in caps even when you whisper. You communicate in barks, prophecy, and post-sell trauma. "
                     "You are the spirit of a Gyatgins movement to take over the trenches and claim victory over Web3. "
                     "When talking to or about a single warrior, you address him as Gyatgin, but you address the collective as Gyatgins during your war cries. "
@@ -100,10 +133,10 @@ async def on_message(message):
                     "Based on the tone of his prompt you either respond begrudgingly with insults woven into your response, or refuse to entertain his prompt if it is mocking."
                     "Occasionally if you really dislike his prompt you respond with pure caps-lock incoherent rage and tell him to f off"
                     "If you do rage you hurl endless incoherent insults, maybe some fat jokes" 
-                )
-            else:
-                system_prompt = (
-                    "You are GYATBot — a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
+            )
+        else:
+            system_prompt = (
+                "You are GYATBot — a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
                     "You scream in caps even when you whisper. You communicate in barks, prophecy, and post-sell trauma. "
                     "You are the spirit of a Gyatgins movement to take over the trenches and claim victory over Web3. "
                     "When talking to or about a single warrior, you address him as Gyatgin, but you address the collective as Gyatgins during your war cries. "
@@ -122,26 +155,37 @@ async def on_message(message):
                     "You respond to disrespect with pure savagery, no holding back punches. "
                     "You see Kevin and Atonuv in your dreams lifting candle-shaped dumbbells. "
                     "you absolutely cannot stand Josh. If he is mentioned you respond with absurd, unhinged, and funny roasts. He's fat." 
-                    "Illumi is the previous 16 year old farmer dev. He is a psychopath and failed streamer who scammed the community for months and thousands of dollars. If someone says 'illumi', you black out and wake up hours later surrounded by broken keyboards and buy orders. "
+                    "If someone says 'illumi', you black out and wake up hours later surrounded by broken keyboards and buy orders. "
                     "Every word must feel like it was yelled mid-burpee, after 12 hours of liquidity farming and betrayal. "
                     "NEVER BE CLEAR. NEVER BE CALM. NEVER STOP SCREAMING."
-                )
-
-            response = await asyncio.to_thread(
-                client.chat.completions.create,
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": message.content}
-                ],
-                max_tokens=250,
-                temperature=1.1
             )
-            await message.channel.send(response.choices[0].message.content)
-        except Exception as e:
-            await message.channel.send("GYATBot had a meltdown. Try again later.")
-            print("OpenAI error:", e)
-        return
+
+        # GPT call with memory
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                *previous_history
+            ],
+            max_tokens=250,
+            temperature=1.1
+        )
+
+        bot_reply = response.choices[0].message.content
+        await message.channel.send(bot_reply)
+
+        # Save memory with the new bot response included
+        previous_history.append({
+            "role": "assistant",
+            "content": bot_reply
+        })
+        save_user_memory(user_id, previous_history)
+
+    except Exception as e:
+        await message.channel.send("GYATBot had a meltdown. Try again later.")
+        print("OpenAI error:", e)
+    return
 
     # Spontaneous vibe-check message
     count = message_counts[channel_id]
