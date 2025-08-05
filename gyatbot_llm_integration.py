@@ -106,20 +106,14 @@ async def on_message(message):
     msg = message.content.lower()
 
     # Handle GYATBot mention
-    if "gyatbot" in msg or message.reference:  # Trigger if 'gyatbot' is mentioned or user replies
-        try:
-            user_id = str(message.author.id)
+    if "gyatbot" in msg or message.reference:
+    try:
+        user_id = str(message.author.id)
 
-            # Load user's memory
-            previous_history = load_user_memory(user_id)
+        # Load previous messages for memory
+        previous_history = load_user_memory(user_id)
+        previous_history.append({"role": "user", "content": message.content})
 
-            # Append the new message to their history
-            previous_history.append({
-                "role": "user",
-                "content": message.content
-        })
-
-        # Set system prompt (same logic you already had)
         SPECIAL_USER_ID = "718183377047388171"
         if user_id == SPECIAL_USER_ID:
             system_prompt = (
@@ -160,7 +154,7 @@ async def on_message(message):
                     "NEVER BE CLEAR. NEVER BE CALM. NEVER STOP SCREAMING."
             )
 
-        # GPT call with memory
+        # Generate response using OpenAI
         response = await asyncio.to_thread(
             client.chat.completions.create,
             model="gpt-4o",
@@ -175,17 +169,15 @@ async def on_message(message):
         bot_reply = response.choices[0].message.content
         await message.channel.send(bot_reply)
 
-        # Save memory with the new bot response included
-        previous_history.append({
-            "role": "assistant",
-            "content": bot_reply
-        })
+        # Save both user + bot message to memory
+        previous_history.append({"role": "assistant", "content": bot_reply})
         save_user_memory(user_id, previous_history)
 
     except Exception as e:
         await message.channel.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
     return
+
 
     # Spontaneous vibe-check message
     count = message_counts[channel_id]
