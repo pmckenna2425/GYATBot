@@ -107,12 +107,12 @@ async def on_message(message):
 
     # Handle GYATBot mention
     if "gyatbot" in msg or message.reference:
-    try:
-        user_id = str(message.author.id)
+        try:
+            user_id = str(message.author.id)
 
-        # Load previous messages for memory
-        previous_history = load_user_memory(user_id)
-        previous_history.append({"role": "user", "content": message.content})
+            # Load previous messages for memory
+            previous_history = load_user_memory(user_id)
+            previous_history.append({"role": "user", "content": message.content})
 
         SPECIAL_USER_ID = "718183377047388171"
         if user_id == SPECIAL_USER_ID:
