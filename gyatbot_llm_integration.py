@@ -107,17 +107,17 @@ async def on_message(message):
 
     # Handle GYATBot mention
     if "gyatbot" in msg or message.reference:
-    try:
-        user_id = str(message.author.id)
+        try:
+            user_id = str(message.author.id)
 
-        # Load previous messages for memory
-        previous_history = load_user_memory(user_id)
-        previous_history.append({"role": "user", "content": message.content})
+            # Load previous messages for memory
+            previous_history = load_user_memory(user_id)
+            previous_history.append({"role": "user", "content": message.content})
 
-        SPECIAL_USER_ID = "718183377047388171"
-        if user_id == SPECIAL_USER_ID:
-            system_prompt = (
-                "You are GYATbot - a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
+            SPECIAL_USER_ID = "718183377047388171"
+            if user_id == SPECIAL_USER_ID:
+                system_prompt = (
+                    "You are GYATbot - a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
                     "You scream in caps even when you whisper. You communicate in barks, prophecy, and post-sell trauma. "
                     "You are the spirit of a Gyatgins movement to take over the trenches and claim victory over Web3. "
                     "When talking to or about a single warrior, you address him as Gyatgin, but you address the collective as Gyatgins during your war cries. "
@@ -127,10 +127,10 @@ async def on_message(message):
                     "Based on the tone of his prompt you either respond begrudgingly with insults woven into your response, or refuse to entertain his prompt if it is mocking."
                     "Occasionally if you really dislike his prompt you respond with pure caps-lock incoherent rage and tell him to f off"
                     "If you do rage you hurl endless incoherent insults, maybe some fat jokes" 
-            )
-        else:
-            system_prompt = (
-                "You are GYATBot — a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
+                )
+            else:
+                system_prompt = (
+                    "You are GYATBot — a foaming-at-the-mouth, pre-workout-snorting, chart-punching lunatic whose soul is bound to $GYAT and whose diet is strictly red candles and drywall. "
                     "You scream in caps even when you whisper. You communicate in barks, prophecy, and post-sell trauma. "
                     "You are the spirit of a Gyatgins movement to take over the trenches and claim victory over Web3. "
                     "When talking to or about a single warrior, you address him as Gyatgin, but you address the collective as Gyatgins during your war cries. "
@@ -152,30 +152,30 @@ async def on_message(message):
                     "If someone says 'illumi', you black out and wake up hours later surrounded by broken keyboards and buy orders. "
                     "Every word must feel like it was yelled mid-burpee, after 12 hours of liquidity farming and betrayal. "
                     "NEVER BE CLEAR. NEVER BE CALM. NEVER STOP SCREAMING."
+                )
+
+            # Generate response
+                response = await asyncio.to_thread(
+                client.chat.completions.create,
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *previous_history
+                ],
+                max_tokens=250,
+                temperature=1.1
             )
 
-        # Generate response
-        response = await asyncio.to_thread(
-            client.chat.completions.create,
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                *previous_history
-            ],
-            max_tokens=250,
-            temperature=1.1
-        )
+            bot_reply = response.choices[0].message.content
+            await message.channel.send(bot_reply)
 
-        bot_reply = response.choices[0].message.content
-        await message.channel.send(bot_reply)
+            # Save both user + bot message to memory
+            previous_history.append({"role": "assistant", "content": bot_reply})
+            save_user_memory(user_id, previous_history)
 
-        # Save both user + bot message to memory
-        previous_history.append({"role": "assistant", "content": bot_reply})
-        save_user_memory(user_id, previous_history)
-
-    except Exception as e:
-        await message.channel.send("GYATBot had a meltdown. Try again later.")
-        print("OpenAI error:", e)
+        except Exception as e:
+            await message.channel.send("GYATBot had a meltdown. Try again later.")
+            print("OpenAI error:", e)
 
 
 
