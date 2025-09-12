@@ -275,8 +275,6 @@ async def solprice(interaction: discord.Interaction):
         await interaction.followup.send("Error fetching Solana price.")
         print("Solana price exception:", e)
 
-pip install ccxt pandas
-
 @bot.tree.command(name="solta", description="GYATBot's psychotic TA prophecy for Solana")
 async def solta(interaction: discord.Interaction):
     await interaction.response.defer()
