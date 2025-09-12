@@ -68,16 +68,17 @@ spontaneous_messages = [
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
-    try:
-        synced = await bot.tree.sync()
-        print(f"✅ Synced {len(synced)} slash commands.")
-        print("Slash commands currently registered:")
-        for cmd in bot.tree.get_commands():
-            print(f"- {cmd.name}: {cmd.description}")
 
+    try:
+        # Force sync to a specific guild
+        GUILD_ID = 1338578782482857984  
+        synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
+        print(f"✅ Force-synced {len(synced)} commands to guild {GUILD_ID}")
+        for cmd in synced:
+            print(f"- {cmd.name}: {cmd.description}")
     except Exception as e:
-        print("❌ Failed to sync slash commands:", e)
-        
+        print("❌ Slash command sync failed:", e)
+
 
 
 from collections import defaultdict, deque
