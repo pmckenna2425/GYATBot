@@ -245,6 +245,37 @@ async def gyatbot(ctx, *, prompt):
         await ctx.send("GYATBot had a meltdown. Try again later.")
         print("OpenAI error:", e)
 
+@bot.tree.command(name="solprice", description="Get the current price of Solana (SOL) from CoinGecko")
+async def solprice(interaction: discord.Interaction):
+    await interaction.response.defer()
+
+    try:
+        url = "https://api.coingecko.com/api/v3/simple/price"
+        params = {
+            "ids": "solana",
+            "vs_currencies": "usd",
+            "include_24hr_change": "true"
+        }
+        response = requests.get(url, params=params)
+        data = response.json()
+
+        price = data.get("solana", {}).get("usd")
+        change = data.get("solana", {}).get("usd_24h_change")
+
+        if price is not None and change is not None:
+            emoji = "🟢" if change >= 0 else "🔴"
+            await interaction.followup.send(
+                f"{emoji} **Solana (SOL)**: `${price:,.2f}` ({change:+.2f}% 24h)"
+            )
+        else:
+            await interaction.followup.send("Could not fetch Solana price from CoinGecko.")
+            print("Solana price data missing fields:", data)
+
+    except Exception as e:
+        await interaction.followup.send("Error fetching Solana price.")
+        print("Solana price exception:", e)
+
+
 @bot.tree.command(name="gyatprice", description="Get the current GYAT price from Dexscreener")
 async def gyatprice(interaction: discord.Interaction):
     await interaction.response.defer()
