@@ -11,7 +11,9 @@ import json
 from pathlib import Path
 import ccxt
 import pandas as pd
+from discord import app_commands
 
+GUILD_ID = 1338578782482857984  # GYAT server ID 
 
 # Load environment variables
 TOKEN = os.getenv("TOKEN")
@@ -68,16 +70,30 @@ spontaneous_messages = [
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} is online.')
-
     try:
-        # Force sync to a specific guild
-        GUILD_ID = 1338578782482857984  
-        synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
+        guild = discord.Object(id=GUILD_ID)
+
+        # Wipe any stale guild commands (including a stuck 'solta')
+        bot.tree.clear_commands(guild=guild)
+
+        # Copy all global commands into this guild (includes solprice, gyatprice, gyatsummary, and the new solta_cmd)
+        bot.tree.copy_global_to(guild=guild)
+
+        # Now sync the guild explicitly
+        synced = await bot.tree.sync(guild=guild)
+
         print(f"✅ Force-synced {len(synced)} commands to guild {GUILD_ID}")
         for cmd in synced:
             print(f"- {cmd.name}: {cmd.description}")
+
+        # Optional: show what Discord thinks is live
+        live = await bot.tree.fetch_commands(guild=guild)
+        print("📋 Discord reports these guild commands live:")
+        for c in live:
+            print(f"  /{c.name}")
     except Exception as e:
         print("❌ Slash command sync failed:", e)
+
 
 
 
@@ -269,17 +285,15 @@ async def solprice(interaction: discord.Interaction):
         await interaction.followup.send("Error fetching Solana price.")
         print("Solana price exception:", e)
 
+@app_commands.guilds(discord.Object(id=GUILD_ID))
 @bot.tree.command(name="solta", description="GYATBot's psychotic TA prophecy for Solana")
-async def solta(interaction: discord.Interaction):
+async def solta_cmd(interaction: discord.Interaction):  # renamed from solta -> solta_cmd
     await interaction.response.defer()
-
     try:
         exchange = ccxt.binance()
         ohlcv = exchange.fetch_ohlcv('SOL/USDT', timeframe='1h', limit=100)
-
         df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
 
-        # RSI
         delta = df['close'].diff()
         gain = delta.where(delta > 0, 0).rolling(14).mean()
         loss = -delta.where(delta < 0, 0).rolling(14).mean()
@@ -287,36 +301,31 @@ async def solta(interaction: discord.Interaction):
         rsi = 100 - (100 / (1 + rs))
         current_rsi = rsi.iloc[-1]
 
-        # Trend
         recent_price = df['close'].iloc[-1]
         old_price = df['close'].iloc[-15]
         trend_delta = recent_price - old_price
         trend_percent = (trend_delta / old_price) * 100
 
-        # Volume surge
         avg_vol = df['volume'].iloc[-15:-1].mean()
         current_vol = df['volume'].iloc[-1]
         vol_surge = current_vol > 2 * avg_vol
 
-        # Commentary templates
-        rsi_msg = (
-            "OVERBOUGHT. THE GYATGINS ARE FOAMING. SELLERS HIDING BEHIND FTX SERVERS." if current_rsi > 70 else
-            "OVERSOLD. BUY SIGNAL SO LOUD IT CRACKED MY TANGEM." if current_rsi < 30 else
-            "NEUTRAL RSI. THE CALM BEFORE THE DEADLIFT OF DESTINY."
-        )
+        rsi_msg = ("OVERBOUGHT. THE GYATGINS ARE FOAMING. SELLERS HIDING BEHIND FTX SERVERS."
+                   if current_rsi > 70 else
+                   "OVERSOLD. BUY SIGNAL SO LOUD IT CRACKED MY TANGEM."
+                   if current_rsi < 30 else
+                   "NEUTRAL RSI. THE CALM BEFORE THE DEADLIFT OF DESTINY.")
 
-        trend_msg = (
-            f"📈 UP {trend_percent:.2f}% — ROCKET FUEL DETECTED. STRAP IN." if trend_percent > 1 else
-            f"📉 DOWN {trend_percent:.2f}% — BLOOD DRIPPING FROM THE CANDLES." if trend_percent < -1 else
-            f"🌀 SIDEWAYS — LIKE A ZOOMER ON THEIR 3RD SCOOP OF GYATMODE PREWORKOUT."
-        )
+        trend_msg = (f"📈 UP {trend_percent:.2f}% — ROCKET FUEL DETECTED. STRAP IN."
+                     if trend_percent > 1 else
+                     f"📉 DOWN {trend_percent:.2f}% — BLOOD DRIPPING FROM THE CANDLES."
+                     if trend_percent < -1 else
+                     "🌀 SIDEWAYS — LIKE A ZOOMER ON THEIR 3RD SCOOP OF GYATMODE PREWORKOUT.")
 
-        volume_msg = (
-            "📣 VOLUME SURGING. THE WAR DRUMS BEAT LOUDER. FRANKIE IS WATCHING." if vol_surge else
-            "💤 VOLUME SNOOZING. SOMETHING’S BREWING IN THE SHADOWS."
-        )
+        volume_msg = ("📣 VOLUME SURGING. THE WAR DRUMS BEAT LOUDER. FRANKIE IS WATCHING."
+                      if vol_surge else
+                      "💤 VOLUME SNOOZING. SOMETHING’S BREWING IN THE SHADOWS.")
 
-        # Compose final message
         final_msg = (
             f"**📊 GYATBot TA Report**\n"
             f"RSI: `{current_rsi:.2f}` — {rsi_msg}\n"
@@ -330,10 +339,9 @@ async def solta(interaction: discord.Interaction):
         )
 
         await interaction.followup.send(final_msg)
-
     except Exception as e:
         await interaction.followup.send("GYATBot couldn’t read the candles — they were too bright.")
-        print("SolTA exception:", e)
+        import traceback; traceback.print_exc()
 
 
 
