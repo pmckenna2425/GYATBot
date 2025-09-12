@@ -9,6 +9,8 @@ import threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
 from pathlib import Path
+import ccxt
+import pandas as pd
 
 
 # Load environment variables
@@ -280,9 +282,6 @@ async def solta(interaction: discord.Interaction):
     await interaction.response.defer()
 
     try:
-        import ccxt
-        import pandas as pd
-
         exchange = ccxt.binance()
         ohlcv = exchange.fetch_ohlcv('SOL/USDT', timeframe='1h', limit=100)
 
