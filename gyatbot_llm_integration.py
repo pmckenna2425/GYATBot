@@ -196,7 +196,7 @@ async def on_message(message):
 
     # Spontaneous vibe-check message
     count = message_counts[channel_id]
-    if count >= random.randint(15, 20):
+    if count >= random.randint(35, 45):
         message_counts[channel_id] = 0
         context = "\n".join(recent_messages[channel_id])
 
